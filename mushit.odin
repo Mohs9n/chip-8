@@ -31,7 +31,7 @@ trender :: proc(ctx: ^mu.Context, renderer: ^SDL.Renderer) {
 	SDL.RenderSetViewport(renderer, viewport_rect)
 	SDL.RenderSetClipRect(renderer, viewport_rect)
 	SDL.SetRenderDrawColor(renderer, state.bg.r, state.bg.g, state.bg.b, state.bg.a)
-	SDL.RenderClear(renderer)
+	// SDL.RenderClear(renderer)
 
 	command_backing: ^mu.Command
 	for variant in mu.next_command_iterator(ctx, &command_backing) {

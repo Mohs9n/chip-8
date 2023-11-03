@@ -37,7 +37,7 @@ main :: proc() {
         if input(ctx) do break game_loop
         // mu.begin(ctx)
         // mu.end(ctx)
-        // prepareScene()
+        prepareScene()
 
         for i in 0..<20 {
             cycle()
@@ -49,6 +49,7 @@ main :: proc() {
         mu.begin(ctx)
         all_windows(ctx)
         mu.end(ctx)
+        render()
         trender(ctx, app.renderer)
         // drawGrid()
         // presentScene()
