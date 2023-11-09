@@ -1,6 +1,7 @@
 package main
 
 import sdl "vendor:sdl2"
+import sdlF "vendor:sdl2/ttf"
 
 render :: proc() {
     sdl.SetRenderDrawColor(app.renderer, 255,255,255,255)
@@ -14,6 +15,16 @@ render :: proc() {
     }
 //  0x70 0x70 0x20 0x70 0xA8 0x20 0x50 0x50
 
+}
+
+drawText :: proc(x,y: i32, font: ^sdlF.Font, text: cstring, color: sdl.Color) {
+    surfaceMessege: ^sdl.Surface = sdlF.RenderText_Solid(font, text,color)
+    defer sdl.FreeSurface(surfaceMessege)
+    texture: ^sdl.Texture = sdl.CreateTextureFromSurface(app.renderer, surfaceMessege)
+    defer sdl.DestroyTexture(texture)
+
+    textRect: sdl.Rect = {x,y,surfaceMessege.w,surfaceMessege.h}
+    sdl.RenderCopy(app.renderer, texture, nil, &textRect)
 }
 
 drawGrid :: proc() {
@@ -30,7 +41,7 @@ drawGrid :: proc() {
 }
 
 prepareScene :: proc() {
-    sdl.SetRenderDrawColor(app.renderer, 10, 20, 30, 255)
+    sdl.SetRenderDrawColor(app.renderer, state.bg.r, state.bg.g, state.bg.b, state.bg.a)
     sdl.RenderClear(app.renderer)
 }
 

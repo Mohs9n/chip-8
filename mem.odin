@@ -65,3 +65,5 @@ I: u16
 PC: u16 = 0x200
 
 DTimer, STimer: u8
+
+block:= 0

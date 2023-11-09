@@ -2,7 +2,7 @@ package main
 
 import "core:fmt"
 import mu "vendor:microui"
-import SDL "vendor:sdl2"
+import sdl "vendor:sdl2"
 
 state := struct {
 	mu_ctx: mu.Context,
@@ -11,33 +11,33 @@ state := struct {
 	log_buf_updated: bool,
 	bg: mu.Color,
 
-	atlas_texture: ^SDL.Texture,
+	atlas_texture: ^sdl.Texture,
 }{
-	bg = {90, 95, 100, 255},
+	bg = {10, 20, 30, 255},
 }
 
-trender :: proc(ctx: ^mu.Context, renderer: ^SDL.Renderer) {
-	render_texture :: proc(renderer: ^SDL.Renderer, dst: ^SDL.Rect, src: mu.Rect, color: mu.Color) {
+uirender :: proc(ctx: ^mu.Context, renderer: ^sdl.Renderer) {
+	render_texture :: proc(renderer: ^sdl.Renderer, dst: ^sdl.Rect, src: mu.Rect, color: mu.Color) {
 		dst.w = src.w
 		dst.h = src.h
 
-		SDL.SetTextureAlphaMod(state.atlas_texture, color.a)
-		SDL.SetTextureColorMod(state.atlas_texture, color.r, color.g, color.b)
-		SDL.RenderCopy(renderer, state.atlas_texture, &SDL.Rect{src.x, src.y, src.w, src.h}, dst)
+		sdl.SetTextureAlphaMod(state.atlas_texture, color.a)
+		sdl.SetTextureColorMod(state.atlas_texture, color.r, color.g, color.b)
+		sdl.RenderCopy(renderer, state.atlas_texture, &sdl.Rect{src.x, src.y, src.w, src.h}, dst)
 	}
 
-	viewport_rect := &SDL.Rect{}
-	SDL.GetRendererOutputSize(renderer, &viewport_rect.w, &viewport_rect.h)
-	SDL.RenderSetViewport(renderer, viewport_rect)
-	SDL.RenderSetClipRect(renderer, viewport_rect)
-	SDL.SetRenderDrawColor(renderer, state.bg.r, state.bg.g, state.bg.b, state.bg.a)
-	// SDL.RenderClear(renderer)
+	viewport_rect := &sdl.Rect{}
+	sdl.GetRendererOutputSize(renderer, &viewport_rect.w, &viewport_rect.h)
+	sdl.RenderSetViewport(renderer, viewport_rect)
+	sdl.RenderSetClipRect(renderer, viewport_rect)
+	// sdl.SetRenderDrawColor(renderer, state.bg.r, state.bg.g, state.bg.b, state.bg.a)
+	// sdl.RenderClear(renderer)
 
 	command_backing: ^mu.Command
 	for variant in mu.next_command_iterator(ctx, &command_backing) {
 		switch cmd in variant {
 		case ^mu.Command_Text:
-			dst := SDL.Rect{cmd.pos.x, cmd.pos.y, 0, 0}
+			dst := sdl.Rect{cmd.pos.x, cmd.pos.y, 0, 0}
 			for ch in cmd.str do if ch&0xc0 != 0x80 {
 				r := min(int(ch), 127)
 				src := mu.default_atlas[mu.DEFAULT_ATLAS_FONT + r]
@@ -45,23 +45,22 @@ trender :: proc(ctx: ^mu.Context, renderer: ^SDL.Renderer) {
 				dst.x += dst.w
 			}
 		case ^mu.Command_Rect:
-			SDL.SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b, cmd.color.a)
-			SDL.RenderFillRect(renderer, &SDL.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
+			sdl.SetRenderDrawColor(renderer, cmd.color.r, cmd.color.g, cmd.color.b, cmd.color.a)
+			sdl.RenderFillRect(renderer, &sdl.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
 		case ^mu.Command_Icon:
 			src := mu.default_atlas[cmd.id]
 			x := cmd.rect.x + (cmd.rect.w - src.w)/2
 			y := cmd.rect.y + (cmd.rect.h - src.h)/2
-			render_texture(renderer, &SDL.Rect{x, y, 0, 0}, src, cmd.color)
+			render_texture(renderer, &sdl.Rect{x, y, 0, 0}, src, cmd.color)
 		case ^mu.Command_Clip:
-			SDL.RenderSetClipRect(renderer, &SDL.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
+			sdl.RenderSetClipRect(renderer, &sdl.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
 		case ^mu.Command_Jump:
 			unreachable()
 		}
 	}
 
-	SDL.RenderPresent(renderer)
+	sdl.RenderPresent(renderer)
 }
-
 
 u8_slider :: proc(ctx: ^mu.Context, val: ^u8, lo, hi: u8) -> (res: mu.Result_Set) {
 	mu.push_id(ctx, uintptr(val))
@@ -88,14 +87,22 @@ reset_log :: proc() {
 	state.log_buf_len = 0
 }
 
-
 all_windows :: proc(ctx: ^mu.Context) {
 	@static opts := mu.Options{.NO_CLOSE}
 
-	if mu.window(ctx, "Demo Window", {40, 40, 300, 450}, opts) {
-		if .ACTIVE in mu.header(ctx, "Window Info") {
+			
+	if mu.window(ctx, "Demo Window", {900, 40, 300, 450}, opts) {
+		if .ACTIVE in mu.header(ctx, "Window Infoo") {
 			win := mu.get_current_container(ctx)
 			mu.layout_row(ctx, {54, -1}, 0)
+			mu.label(ctx, "Position:")
+			mu.label(ctx, fmt.tprintf("%d, %d", win.rect.x, win.rect.y))
+			mu.label(ctx, "Size:")
+			mu.label(ctx, fmt.tprintf("%d, %d", win.rect.w, win.rect.h))
+		}
+		if .ACTIVE in mu.header(ctx, "Window Info") {
+			win := mu.get_current_container(ctx)
+			mu.layout_row(ctx, {0}, 0)
 			mu.label(ctx, "Position:")
 			mu.label(ctx, fmt.tprintf("%d, %d", win.rect.x, win.rect.y))
 			mu.label(ctx, "Size:")
@@ -183,7 +190,45 @@ all_windows :: proc(ctx: ^mu.Context) {
 		}
 	}
 
-	if mu.window(ctx, "Log Window", {350, 40, 300, 200}, opts) {
+	if mu.window(ctx, "Demo Windo", {200, 500, 300, 300}, mu.Options{.NO_CLOSE}) {
+		if .ACTIVE in mu.header(ctx, "Background Colour", {.EXPANDED}) {
+			mu.layout_row(ctx, {-78, -1}, 68)
+			mu.layout_begin_column(ctx)
+			{
+				mu.layout_row(ctx, {46, -1}, 0)
+				mu.label(ctx, "Red:");   u8_slider(ctx, &state.bg.r, 0, 255)
+				mu.label(ctx, "Green:"); u8_slider(ctx, &state.bg.g, 0, 255)
+				mu.label(ctx, "Blue:");  u8_slider(ctx, &state.bg.b, 0, 255)
+			}
+			mu.layout_end_column(ctx)
+
+			r := mu.layout_next(ctx)
+			mu.draw_rect(ctx, r, state.bg)
+			mu.draw_box(ctx, mu.expand_rect(r, 1), ctx.style.colors[.BORDER])
+			mu.draw_control_text(ctx, fmt.tprintf("#%02x%02x%02x", state.bg.r, state.bg.g, state.bg.b), r, .TEXT, {.ALIGN_CENTER})
+		}
+		if .ACTIVE in mu.header(ctx, "Test Buttons", {.EXPANDED}) {
+			mu.layout_row(ctx, {86, -110, -1})
+			mu.label(ctx, "Test buttons 1:")
+			if .SUBMIT in mu.button(ctx, "Button 1") { write_log("Pressed button 1") }
+			if .SUBMIT in mu.button(ctx, "Button 2") { write_log("Pressed button 2") }
+			mu.label(ctx, "Test buttons 2:")
+			if .SUBMIT in mu.button(ctx, "Button 3") { write_log("Pressed button 3") }
+			if .SUBMIT in mu.button(ctx, "Button 4") { 
+				write_log("Pressed button 4") 
+			}
+		}
+		if .ACTIVE in mu.header(ctx, "Test Wind", {.EXPANDED}) {
+			mu.layout_row(ctx, {100, -1})	
+			mu.label(ctx, "Pause Emu")
+			if .SUBMIT in mu.button(ctx, "Pause") {
+				PAUSE=!PAUSE
+				write_log(fmt.tprintf("Emulation is %v", "Paused" if PAUSE else "On"))
+			}
+		}
+	}
+
+	if mu.window(ctx, "Log Window", {960, 500, 300, 200}, opts) {
 		mu.layout_row(ctx, {-1}, -28)
 		mu.begin_panel(ctx, "Log")
 		mu.layout_row(ctx, {-1}, -1)
@@ -212,7 +257,7 @@ all_windows :: proc(ctx: ^mu.Context) {
 		}
 	}
 
-	if mu.window(ctx, "Style Window", {350, 250, 300, 240}) {
+	if mu.window(ctx, "Style Window", {650, 500, 300, 240}) {
 		@static colors := [mu.Color_Type]string{
 			.TEXT         = "text",
 			.BORDER       = "border",
@@ -230,6 +275,37 @@ all_windows :: proc(ctx: ^mu.Context) {
 			.SCROLL_THUMB = "scroll thumb",
 		}
 
+		sw := i32(f32(mu.get_current_container(ctx).body.w) * 0.14)
+		mu.layout_row(ctx, {80, sw, sw, sw, sw, -1})
+		for label, col in colors {
+			mu.label(ctx, label)
+			u8_slider(ctx, &ctx.style.colors[col].r, 0, 255)
+			u8_slider(ctx, &ctx.style.colors[col].g, 0, 255)
+			u8_slider(ctx, &ctx.style.colors[col].b, 0, 255)
+			u8_slider(ctx, &ctx.style.colors[col].a, 0, 255)
+			mu.draw_rect(ctx, mu.layout_next(ctx), ctx.style.colors[col])
+		}
+	}
+	if mu.window(ctx, "Style Windo", {650, 500, 300, 240}) {
+		s := mu.Style{size = {10, 10}}
+		@static colors := [mu.Color_Type]string{
+			.TEXT         = "text",
+			.BORDER       = "border",
+			.WINDOW_BG    = "window bg",
+			.TITLE_BG     = "title bg",
+			.TITLE_TEXT   = "title text",
+			.PANEL_BG     = "panel bg",
+			.BUTTON       = "button",
+			.BUTTON_HOVER = "button hover",
+			.BUTTON_FOCUS = "button focus",
+			.BASE         = "base",
+			.BASE_HOVER   = "base hover",
+			.BASE_FOCUS   = "base focus",
+			.SCROLL_BASE  = "scroll base",
+			.SCROLL_THUMB = "scroll thumb",
+		}
+		state.mu_ctx._style.size = {0,10}
+		state.mu_ctx._style.spacing = 1
 		sw := i32(f32(mu.get_current_container(ctx).body.w) * 0.14)
 		mu.layout_row(ctx, {80, sw, sw, sw, sw, -1})
 		for label, col in colors {

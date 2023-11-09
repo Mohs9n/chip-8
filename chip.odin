@@ -6,6 +6,7 @@ import "core:container/queue"
 import "core:math/rand"
 
 cycle :: proc() {
+    if PAUSE do return
     op := fetch()
     F := (op & 0xF000) >> 12
     X := (op & 0x0F00) >> 8
@@ -97,12 +98,14 @@ cycle :: proc() {
         case 0xE:
             switch NN {
                 case 0x9E:
-                    
+
             }
         case 0xF:
             switch NN {
                 case 0x07:
                     reg[X] = DTimer
+                case 0x0A:
+                    
                 case 0x15:
                     DTimer = reg[X]
                 case 0x18:

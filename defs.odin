@@ -3,3 +3,7 @@ package main
 SCREEN_WIDTH :: 64 + 30
 SCREEN_HEIGHT :: 32 + 25
 SCALE :: 15
+
+PAUSE := true
+
+FPS_INTERVAL :: 1.0
