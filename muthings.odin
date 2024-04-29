@@ -5,14 +5,13 @@ import mu "vendor:microui"
 import sdl "vendor:sdl2"
 
 state := struct {
-	mu_ctx: mu.Context,
-	log_buf:         [1<<16]byte,
+	mu_ctx:          mu.Context,
+	log_buf:         [1 << 16]byte,
 	log_buf_len:     int,
 	log_buf_updated: bool,
-	bg: mu.Color,
-
-	atlas_texture: ^sdl.Texture,
-}{
+	bg:              mu.Color,
+	atlas_texture:   ^sdl.Texture,
+} {
 	bg = {10, 20, 30, 255},
 }
 
@@ -38,7 +37,7 @@ uirender :: proc(ctx: ^mu.Context, renderer: ^sdl.Renderer) {
 		switch cmd in variant {
 		case ^mu.Command_Text:
 			dst := sdl.Rect{cmd.pos.x, cmd.pos.y, 0, 0}
-			for ch in cmd.str do if ch&0xc0 != 0x80 {
+			for ch in cmd.str do if ch & 0xc0 != 0x80 {
 				r := min(int(ch), 127)
 				src := mu.default_atlas[mu.DEFAULT_ATLAS_FONT + r]
 				render_texture(renderer, &dst, src, cmd.color)
@@ -49,8 +48,8 @@ uirender :: proc(ctx: ^mu.Context, renderer: ^sdl.Renderer) {
 			sdl.RenderFillRect(renderer, &sdl.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
 		case ^mu.Command_Icon:
 			src := mu.default_atlas[cmd.id]
-			x := cmd.rect.x + (cmd.rect.w - src.w)/2
-			y := cmd.rect.y + (cmd.rect.h - src.h)/2
+			x := cmd.rect.x + (cmd.rect.w - src.w) / 2
+			y := cmd.rect.y + (cmd.rect.h - src.h) / 2
 			render_texture(renderer, &sdl.Rect{x, y, 0, 0}, src, cmd.color)
 		case ^mu.Command_Clip:
 			sdl.RenderSetClipRect(renderer, &sdl.Rect{cmd.rect.x, cmd.rect.y, cmd.rect.w, cmd.rect.h})
@@ -65,7 +64,8 @@ uirender :: proc(ctx: ^mu.Context, renderer: ^sdl.Renderer) {
 u8_slider :: proc(ctx: ^mu.Context, val: ^u8, lo, hi: u8) -> (res: mu.Result_Set) {
 	mu.push_id(ctx, uintptr(val))
 
-	@static tmp: mu.Real
+	@(static)
+	tmp: mu.Real
 	tmp = mu.Real(val^)
 	res = mu.slider(ctx, &tmp, mu.Real(lo), mu.Real(hi), 0, "%.0f", {.ALIGN_CENTER})
 	val^ = u8(tmp)
@@ -88,9 +88,10 @@ reset_log :: proc() {
 }
 
 all_windows :: proc(ctx: ^mu.Context) {
-	@static opts := mu.Options{.NO_CLOSE}
+	@(static)
+	opts := mu.Options{.NO_CLOSE}
 
-			
+
 	if mu.window(ctx, "Demo Window", {900, 40, 300, 450}, opts) {
 		if .ACTIVE in mu.header(ctx, "Window Infoo") {
 			win := mu.get_current_container(ctx)
@@ -113,7 +114,7 @@ all_windows :: proc(ctx: ^mu.Context) {
 			mu.layout_row(ctx, {120, 120, 120}, 0)
 			for opt in mu.Opt {
 				state := opt in opts
-				if .CHANGE in mu.checkbox(ctx, fmt.tprintf("%v", opt), &state)  {
+				if .CHANGE in mu.checkbox(ctx, fmt.tprintf("%v", opt), &state) {
 					if state {
 						opts += {opt}
 					} else {
@@ -126,11 +127,11 @@ all_windows :: proc(ctx: ^mu.Context) {
 		if .ACTIVE in mu.header(ctx, "Test Buttons", {.EXPANDED}) {
 			mu.layout_row(ctx, {86, -110, -1})
 			mu.label(ctx, "Test buttons 1:")
-			if .SUBMIT in mu.button(ctx, "Button 1") { write_log("Pressed button 1") }
-			if .SUBMIT in mu.button(ctx, "Button 2") { write_log("Pressed button 2") }
+			if .SUBMIT in mu.button(ctx, "Button 1") {write_log("Pressed button 1")}
+			if .SUBMIT in mu.button(ctx, "Button 2") {write_log("Pressed button 2")}
 			mu.label(ctx, "Test buttons 2:")
-			if .SUBMIT in mu.button(ctx, "Button 3") { write_log("Pressed button 3") }
-			if .SUBMIT in mu.button(ctx, "Button 4") { write_log("Pressed button 4") }
+			if .SUBMIT in mu.button(ctx, "Button 3") {write_log("Pressed button 3")}
+			if .SUBMIT in mu.button(ctx, "Button 4") {write_log("Pressed button 4")}
 		}
 
 		if .ACTIVE in mu.header(ctx, "Tree and Text", {.EXPANDED}) {
@@ -142,19 +143,20 @@ all_windows :: proc(ctx: ^mu.Context) {
 					mu.label(ctx, "world")
 				}
 				if .ACTIVE in mu.treenode(ctx, "Test 1b") {
-					if .SUBMIT in mu.button(ctx, "Button 1") { write_log("Pressed button 1") }
-					if .SUBMIT in mu.button(ctx, "Button 2") { write_log("Pressed button 2") }
+					if .SUBMIT in mu.button(ctx, "Button 1") {write_log("Pressed button 1")}
+					if .SUBMIT in mu.button(ctx, "Button 2") {write_log("Pressed button 2")}
 				}
 			}
 			if .ACTIVE in mu.treenode(ctx, "Test 2") {
 				mu.layout_row(ctx, {53, 53})
-				if .SUBMIT in mu.button(ctx, "Button 3") { write_log("Pressed button 3") }
-				if .SUBMIT in mu.button(ctx, "Button 4") { write_log("Pressed button 4") }
-				if .SUBMIT in mu.button(ctx, "Button 5") { write_log("Pressed button 5") }
-				if .SUBMIT in mu.button(ctx, "Button 6") { write_log("Pressed button 6") }
+				if .SUBMIT in mu.button(ctx, "Button 3") {write_log("Pressed button 3")}
+				if .SUBMIT in mu.button(ctx, "Button 4") {write_log("Pressed button 4")}
+				if .SUBMIT in mu.button(ctx, "Button 5") {write_log("Pressed button 5")}
+				if .SUBMIT in mu.button(ctx, "Button 6") {write_log("Pressed button 6")}
 			}
 			if .ACTIVE in mu.treenode(ctx, "Test 3") {
-				@static checks := [3]bool{true, false, true}
+				@(static)
+				checks := [3]bool{true, false, true}
 				mu.checkbox(ctx, "Checkbox 1", &checks[0])
 				mu.checkbox(ctx, "Checkbox 2", &checks[1])
 				mu.checkbox(ctx, "Checkbox 3", &checks[2])
@@ -164,11 +166,12 @@ all_windows :: proc(ctx: ^mu.Context) {
 
 			mu.layout_begin_column(ctx)
 			mu.layout_row(ctx, {-1})
-			mu.text(ctx,
-				"Lorem ipsum dolor sit amet, consectetur adipiscing "+
-				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus "+
+			mu.text(
+				ctx,
+				"Lorem ipsum dolor sit amet, consectetur adipiscing " +
+				"elit. Maecenas lacinia, sem eu lacinia molestie, mi risus faucibus " +
 				"ipsum, eu varius magna felis a nulla.",
-		        )
+			)
 			mu.layout_end_column(ctx)
 		}
 
@@ -177,16 +180,22 @@ all_windows :: proc(ctx: ^mu.Context) {
 			mu.layout_begin_column(ctx)
 			{
 				mu.layout_row(ctx, {46, -1}, 0)
-				mu.label(ctx, "Red:");   u8_slider(ctx, &state.bg.r, 0, 255)
-				mu.label(ctx, "Green:"); u8_slider(ctx, &state.bg.g, 0, 255)
-				mu.label(ctx, "Blue:");  u8_slider(ctx, &state.bg.b, 0, 255)
+				mu.label(ctx, "Red:");u8_slider(ctx, &state.bg.r, 0, 255)
+				mu.label(ctx, "Green:");u8_slider(ctx, &state.bg.g, 0, 255)
+				mu.label(ctx, "Blue:");u8_slider(ctx, &state.bg.b, 0, 255)
 			}
 			mu.layout_end_column(ctx)
 
 			r := mu.layout_next(ctx)
 			mu.draw_rect(ctx, r, state.bg)
 			mu.draw_box(ctx, mu.expand_rect(r, 1), ctx.style.colors[.BORDER])
-			mu.draw_control_text(ctx, fmt.tprintf("#%02x%02x%02x", state.bg.r, state.bg.g, state.bg.b), r, .TEXT, {.ALIGN_CENTER})
+			mu.draw_control_text(
+				ctx,
+				fmt.tprintf("#%02x%02x%02x", state.bg.r, state.bg.g, state.bg.b),
+				r,
+				.TEXT,
+				{.ALIGN_CENTER},
+			)
 		}
 	}
 
@@ -196,33 +205,39 @@ all_windows :: proc(ctx: ^mu.Context) {
 			mu.layout_begin_column(ctx)
 			{
 				mu.layout_row(ctx, {46, -1}, 0)
-				mu.label(ctx, "Red:");   u8_slider(ctx, &state.bg.r, 0, 255)
-				mu.label(ctx, "Green:"); u8_slider(ctx, &state.bg.g, 0, 255)
-				mu.label(ctx, "Blue:");  u8_slider(ctx, &state.bg.b, 0, 255)
+				mu.label(ctx, "Red:");u8_slider(ctx, &state.bg.r, 0, 255)
+				mu.label(ctx, "Green:");u8_slider(ctx, &state.bg.g, 0, 255)
+				mu.label(ctx, "Blue:");u8_slider(ctx, &state.bg.b, 0, 255)
 			}
 			mu.layout_end_column(ctx)
 
 			r := mu.layout_next(ctx)
 			mu.draw_rect(ctx, r, state.bg)
 			mu.draw_box(ctx, mu.expand_rect(r, 1), ctx.style.colors[.BORDER])
-			mu.draw_control_text(ctx, fmt.tprintf("#%02x%02x%02x", state.bg.r, state.bg.g, state.bg.b), r, .TEXT, {.ALIGN_CENTER})
+			mu.draw_control_text(
+				ctx,
+				fmt.tprintf("#%02x%02x%02x", state.bg.r, state.bg.g, state.bg.b),
+				r,
+				.TEXT,
+				{.ALIGN_CENTER},
+			)
 		}
 		if .ACTIVE in mu.header(ctx, "Test Buttons", {.EXPANDED}) {
 			mu.layout_row(ctx, {86, -110, -1})
 			mu.label(ctx, "Test buttons 1:")
-			if .SUBMIT in mu.button(ctx, "Button 1") { write_log("Pressed button 1") }
-			if .SUBMIT in mu.button(ctx, "Button 2") { write_log("Pressed button 2") }
+			if .SUBMIT in mu.button(ctx, "Button 1") {write_log("Pressed button 1")}
+			if .SUBMIT in mu.button(ctx, "Button 2") {write_log("Pressed button 2")}
 			mu.label(ctx, "Test buttons 2:")
-			if .SUBMIT in mu.button(ctx, "Button 3") { write_log("Pressed button 3") }
-			if .SUBMIT in mu.button(ctx, "Button 4") { 
-				write_log("Pressed button 4") 
+			if .SUBMIT in mu.button(ctx, "Button 3") {write_log("Pressed button 3")}
+			if .SUBMIT in mu.button(ctx, "Button 4") {
+				write_log("Pressed button 4")
 			}
 		}
 		if .ACTIVE in mu.header(ctx, "Test Wind", {.EXPANDED}) {
-			mu.layout_row(ctx, {100, -1})	
+			mu.layout_row(ctx, {100, -1})
 			mu.label(ctx, "Pause Emu")
 			if .SUBMIT in mu.button(ctx, "Pause") {
-				PAUSE=!PAUSE
+				PAUSE = !PAUSE
 				write_log(fmt.tprintf("Emulation is %v", "Paused" if PAUSE else "On"))
 			}
 		}
@@ -240,8 +255,10 @@ all_windows :: proc(ctx: ^mu.Context) {
 		}
 		mu.end_panel(ctx)
 
-		@static buf: [128]byte
-		@static buf_len: int
+		@(static)
+		buf: [128]byte
+		@(static)
+		buf_len: int
 		submitted := false
 		mu.layout_row(ctx, {-70, -1})
 		if .SUBMIT in mu.textbox(ctx, buf[:], &buf_len) {
@@ -258,7 +275,8 @@ all_windows :: proc(ctx: ^mu.Context) {
 	}
 
 	if mu.window(ctx, "Style Window", {650, 500, 300, 240}) {
-		@static colors := [mu.Color_Type]string{
+		@(static)
+		colors := [mu.Color_Type]string {
 			.TEXT         = "text",
 			.BORDER       = "border",
 			.WINDOW_BG    = "window bg",
@@ -287,8 +305,11 @@ all_windows :: proc(ctx: ^mu.Context) {
 		}
 	}
 	if mu.window(ctx, "Style Windo", {650, 500, 300, 240}) {
-		s := mu.Style{size = {10, 10}}
-		@static colors := [mu.Color_Type]string{
+		s := mu.Style {
+			size = {10, 10},
+		}
+		@(static)
+		colors := [mu.Color_Type]string {
 			.TEXT         = "text",
 			.BORDER       = "border",
 			.WINDOW_BG    = "window bg",
@@ -304,7 +325,7 @@ all_windows :: proc(ctx: ^mu.Context) {
 			.SCROLL_BASE  = "scroll base",
 			.SCROLL_THUMB = "scroll thumb",
 		}
-		state.mu_ctx._style.size = {0,10}
+		state.mu_ctx._style.size = {0, 10}
 		state.mu_ctx._style.spacing = 1
 		sw := i32(f32(mu.get_current_container(ctx).body.w) * 0.14)
 		mu.layout_row(ctx, {80, sw, sw, sw, sw, -1})
@@ -318,3 +339,4 @@ all_windows :: proc(ctx: ^mu.Context) {
 		}
 	}
 }
+

@@ -7,3 +7,4 @@ App :: struct {
 	window:   ^sdl.Window,
 }
 app: App
+
