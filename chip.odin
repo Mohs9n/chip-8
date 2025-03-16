@@ -94,7 +94,7 @@ cycle :: proc() {
 				}
 			}
 		}
-		render()
+	// render()
 	case 0xE:
 		switch NN {
 		case 0x9E:

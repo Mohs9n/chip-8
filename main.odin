@@ -48,6 +48,12 @@ main :: proc() {
 	fps_current: u32
 	fps_frames: u32
 
+
+	dt: f64 = 1.0 / 500.0
+	accumulator: f64 = 0.0
+	lastCounter := sdl.GetPerformanceCounter()
+	freq := f64(sdl.GetPerformanceFrequency())
+
 	ww, wh: i32
 	sdl.GetWindowSize(app.window, &ww, &wh)
 	buf: [4]byte
@@ -55,9 +61,20 @@ main :: proc() {
 	game_loop: for {
 		if input() do break game_loop
 
+		currentCounter := sdl.GetPerformanceCounter()
+		deltaTime := f64(currentCounter - lastCounter) / freq
+		lastCounter = currentCounter
+
+		accumulator += deltaTime
+
+		for accumulator >= dt {
+			cycle()
+			accumulator -= dt
+		}
+
 		prepareScene()
 
-		cycle()
+		// cycle()
 
 		imsdlrndr.NewFrame()
 		imsdl.NewFrame()
@@ -104,6 +121,7 @@ main :: proc() {
 		im.Render()
 
 		render()
+
 		res := strconv.itoa(buf[:], int(fps_current))
 		cres, err := strings.clone_to_cstring(res, context.temp_allocator)
 		drawText(ww - 70, 10, font, cres, White)

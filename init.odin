@@ -3,7 +3,8 @@ package main
 import sdl "vendor:sdl2"
 
 initSDL :: proc() {
-	rendererFlags, windowFlags := sdl.RENDERER_ACCELERATED, sdl.WINDOW_SHOWN | sdl.WINDOW_VULKAN
+	rendererFlags, windowFlags :=
+		sdl.RENDERER_ACCELERATED | sdl.RENDERER_PRESENTVSYNC, sdl.WINDOW_SHOWN | sdl.WINDOW_VULKAN
 	init_err := sdl.Init(sdl.INIT_VIDEO)
 	assert(init_err == 0, sdl.GetErrorString())
 
