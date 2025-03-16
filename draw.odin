@@ -41,11 +41,10 @@ drawGrid :: proc() {
 }
 
 prepareScene :: proc() {
-	sdl.SetRenderDrawColor(app.renderer, state.bg.r, state.bg.g, state.bg.b, state.bg.a)
+	sdl.SetRenderDrawColor(app.renderer, 0x50, 0x99, 0xA0, 0xFF)
 	sdl.RenderClear(app.renderer)
 }
 
 presentScene :: proc() {
 	sdl.RenderPresent(app.renderer)
 }
-

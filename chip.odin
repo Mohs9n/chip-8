@@ -2,8 +2,8 @@ package main
 
 import "core:container/queue"
 import "core:fmt"
-import "core:math/rand"
 import "core:mem"
+import "core:math/rand"
 
 cycle :: proc() {
 	if PAUSE do return
@@ -76,7 +76,7 @@ cycle :: proc() {
 	case 0xB:
 		PC = NNN + u16(reg[0])
 	case 0xC:
-		reg[X] = u8(rand._system_random() & u64(NN))
+		reg[X] = u8(rand.uint64() & u64(NN))
 	case 0xD:
 		x := reg[X] % 64
 		y := reg[Y] % 32

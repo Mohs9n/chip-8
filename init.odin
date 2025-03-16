@@ -30,4 +30,3 @@ cleanup :: proc() {
 	sdl.DestroyRenderer(app.renderer)
 	sdl.Quit()
 }
-
