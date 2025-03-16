@@ -57,15 +57,7 @@ main :: proc() {
 
 		prepareScene()
 
-		for i in 0 ..< 20 {
-			cycle()
-			// if doInput() do break game_loop
-			cycles += 1
-		}
-		// fmt.printf("\n\nDisplay:  %x\n\n\n", display)
-		// render()
-		//
-		//
+		cycle()
 
 		imsdlrndr.NewFrame()
 		imsdl.NewFrame()
@@ -80,6 +72,30 @@ main :: proc() {
 			)
 			if im.Button(label) {
 				PAUSE = !PAUSE
+			}
+			im.End()
+			if im.Begin("Rom Selection") {
+				dir_path := "./roms"
+
+				if dir, err := os.open(dir_path); err == nil {
+					defer os.close(dir)
+
+					if files, err := os.read_dir(dir, -1); err == nil {
+						for file in files {
+							label = strings.clone_to_cstring(file.name, context.temp_allocator)
+							if im.Button(label) {
+								reset_state()
+								if ok := load_rom(file.fullpath); !ok {
+									fmt.printf("Error reading directory\n")
+								}
+							}
+						}
+					} else {
+						fmt.printf("Error reading directory:", err)
+					}
+				} else {
+					fmt.println("Error opening directory:", err)
+				}
 			}
 		}
 		im.End()

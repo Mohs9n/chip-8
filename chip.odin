@@ -2,8 +2,8 @@ package main
 
 import "core:container/queue"
 import "core:fmt"
-import "core:mem"
 import "core:math/rand"
+import "core:mem"
 
 cycle :: proc() {
 	if PAUSE do return
@@ -140,4 +140,3 @@ fetch :: proc() -> u16 {
 clearDisplay :: proc() {
 	mem.zero(&display, len(display))
 }
-
