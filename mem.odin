@@ -6,6 +6,7 @@ import "core:os"
 
 ram: [4096]u8
 reg: [0x10]u8
+keys: [16]bool
 display: [64][32]u8
 I: u16
 PC: u16
@@ -29,6 +30,7 @@ reset_state :: proc() {
 	ram = {}
 	reg = {}
 	display = {}
+	keys = {}
 	I = 0
 	PC = 0x200
 	DTimer, STimer = 0, 0

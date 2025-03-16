@@ -149,8 +149,76 @@ input :: proc() -> bool {
 		#partial switch e.type {
 		case .QUIT:
 			return true
-		case .KEYDOWN, .KEYUP:
-			if e.type == .KEYUP && e.key.keysym.sym == .ESCAPE {
+		case .KEYDOWN:
+			#partial switch e.key.keysym.sym {
+			case .NUM1:
+				keys[0x1] = true
+			case .NUM2:
+				keys[0x2] = true
+			case .NUM3:
+				keys[0x3] = true
+			case .NUM4:
+				keys[0xC] = true
+			case .q:
+				keys[0x4] = true
+			case .W:
+				keys[0x5] = true
+			case .E:
+				keys[0x6] = true
+			case .R:
+				keys[0xD] = true
+			case .A:
+				keys[0x7] = true
+			case .S:
+				keys[0x8] = true
+			case .D:
+				keys[0x9] = true
+			case .F:
+				keys[0xE] = true
+			case .Z:
+				keys[0xA] = true
+			case .X:
+				keys[0x0] = true
+			case .C:
+				keys[0xB] = true
+			case .V:
+				keys[0xF] = true
+			}
+		case .KEYUP:
+			#partial switch e.key.keysym.sym {
+			case .NUM1:
+				keys[0x1] = false
+			case .NUM2:
+				keys[0x2] = false
+			case .NUM3:
+				keys[0x3] = false
+			case .NUM4:
+				keys[0xC] = false
+			case .q:
+				keys[0x4] = false
+			case .W:
+				keys[0x5] = false
+			case .E:
+				keys[0x6] = false
+			case .R:
+				keys[0xD] = false
+			case .A:
+				keys[0x7] = false
+			case .S:
+				keys[0x8] = false
+			case .D:
+				keys[0x9] = false
+			case .F:
+				keys[0xE] = false
+			case .Z:
+				keys[0xA] = false
+			case .X:
+				keys[0x0] = false
+			case .C:
+				keys[0xB] = false
+			case .V:
+				keys[0xF] = false
+			case .ESCAPE:
 				sdl.PushEvent(&sdl.Event{type = .QUIT})
 			}
 		}

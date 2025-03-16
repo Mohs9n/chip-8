@@ -54,18 +54,16 @@ cycle :: proc() {
 			else do reg[0xF] = 0
 		case 0x5:
 			diff := reg[X] - reg[Y]
-			reg[0xF] = 1 if reg[X] > reg[Y] else 0
+			reg[0xF] = 1 if reg[X] >= reg[Y] else 0
 			reg[X] = diff
 		case 0x6:
-			reg[X] = reg[Y]
 			reg[0xF] = reg[X] & 1
 			reg[X] = reg[X] >> 1
 		case 0x7:
 			diff := reg[Y] - reg[X]
-			reg[0xF] = 1 if reg[Y] > reg[X] else 0
+			reg[0xF] = 1 if reg[Y] >= reg[X] else 0
 			reg[X] = diff
 		case 0xE:
-			reg[X] = reg[Y]
 			reg[0xF] = (reg[X] & 0x80) >> 7
 			reg[X] = reg[X] << 1
 		}
@@ -86,11 +84,12 @@ cycle :: proc() {
 			for j in 0 ..< 8 {
 				bit := (b >> u8(7 - j)) & 1
 				if bit == 1 {
-					if display[x + u8(j)][y + u8(i)] == 1 {
+					px := x + u8(j)
+					py := y + u8(i)
+					if display[px][py] == 1 {
 						reg[0xF] = 1
-						display[x + u8(j)][y + u8(i)] = 0
 					}
-					display[x + u8(j)][y + u8(i)] = 1
+					display[px][py] ~= 1
 				}
 			}
 		}
@@ -98,14 +97,28 @@ cycle :: proc() {
 	case 0xE:
 		switch NN {
 		case 0x9E:
-
+			if keys[reg[X]] {
+				PC += 2
+			}
+		case 0xA1:
+			if !keys[reg[X]] {
+				PC += 2
+			}
 		}
 	case 0xF:
 		switch NN {
 		case 0x07:
 			reg[X] = DTimer
 		case 0x0A:
-
+			keyPressed := false
+			for i in 0 ..< 16 {
+				if keys[i] {
+					reg[X] = u8(i)
+					keyPressed = true
+					break
+				}
+			}
+			if !keyPressed do return
 		case 0x15:
 			DTimer = reg[X]
 		case 0x18:
@@ -127,6 +140,7 @@ cycle :: proc() {
 				reg[i] = ram[I + i]
 			}
 		}
+
 	}
 }
 
@@ -138,5 +152,6 @@ fetch :: proc() -> u16 {
 }
 
 clearDisplay :: proc() {
-	mem.zero(&display, len(display))
+	// mem.zero(&display, len(display))
+	display = {}
 }
