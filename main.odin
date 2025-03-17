@@ -3,6 +3,7 @@ package main
 import "core:bufio"
 import "core:fmt"
 import "core:io"
+import "core:mem"
 import "core:os"
 import "core:strconv"
 import "core:strings"
@@ -14,6 +15,23 @@ import sdl "vendor:sdl2"
 import sdlF "vendor:sdl2/ttf"
 
 main :: proc() {
+
+	when ODIN_DEBUG {
+		track: mem.Tracking_Allocator
+		mem.tracking_allocator_init(&track, context.allocator)
+		context.allocator = mem.tracking_allocator(&track)
+
+		defer {
+			if len(track.allocation_map) > 0 {
+				fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				for _, entry in track.allocation_map {
+					fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+				}
+			}
+			mem.tracking_allocator_destroy(&track)
+		}
+	}
+
 	initSDL()
 	defer cleanup()
 
@@ -56,7 +74,6 @@ main :: proc() {
 
 	ww, wh: i32
 	sdl.GetWindowSize(app.window, &ww, &wh)
-	buf: [4]byte
 
 	game_loop: for {
 		if input() do break game_loop
@@ -84,7 +101,11 @@ main :: proc() {
 
 		if im.Begin("Emulation Control") {
 			label := strings.clone_to_cstring(
-				fmt.aprintf("%s Emulation", "Continue" if PAUSE else "Pause"),
+				fmt.aprintf(
+					"%s Emulation",
+					"Continue" if PAUSE else "Pause",
+					allocator = context.temp_allocator,
+				),
 				context.temp_allocator,
 			)
 			if im.Button(label) {
@@ -92,12 +113,12 @@ main :: proc() {
 			}
 			im.End()
 			if im.Begin("Rom Selection") {
-				dir_path := "./roms"
+				dir_path :: "./roms"
 
 				if dir, err := os.open(dir_path); err == nil {
 					defer os.close(dir)
 
-					if files, err := os.read_dir(dir, -1); err == nil {
+					if files, err := os.read_dir(dir, -1, context.temp_allocator); err == nil {
 						for file in files {
 							label = strings.clone_to_cstring(file.name, context.temp_allocator)
 							if im.Button(label) {
@@ -122,6 +143,7 @@ main :: proc() {
 
 		render()
 
+		buf: [4]byte
 		res := strconv.itoa(buf[:], int(fps_current))
 		cres, err := strings.clone_to_cstring(res, context.temp_allocator)
 		drawText(ww - 70, 10, font, cres, White)
@@ -139,6 +161,8 @@ main :: proc() {
 			fps_current = fps_frames
 			fps_frames = 0
 		}
+
+		free_all(context.temp_allocator)
 		// sdl.Delay(8)
 	}
 }

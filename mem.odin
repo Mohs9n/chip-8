@@ -2,6 +2,7 @@ package main
 
 import "core:container/queue"
 import "core:fmt"
+import "core:mem"
 import "core:os"
 
 ram: [4096]u8
@@ -49,6 +50,7 @@ load_rom :: proc(path: string) -> bool {
 	for i in 0 ..< len(rom) {
 		ram[0x200 + i] = rom[i]
 	}
+	delete(rom)
 	return true
 }
 
