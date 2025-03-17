@@ -97,6 +97,9 @@ main :: proc() {
 		imsdl.NewFrame()
 		im.NewFrame()
 
+
+		render_dockspace()
+
 		im.ShowDemoWindow()
 
 		if im.Begin("Emulation Control") {
@@ -248,4 +251,40 @@ input :: proc() -> bool {
 		}
 	}
 	return false
+}
+
+
+render_dockspace :: proc() {
+	dockspaceOpen := true
+	opt_fullscreen_persistant :: true
+	opt_fullscreen := opt_fullscreen_persistant
+
+	window_flags := im.WindowFlags {
+		.NoDocking,
+		.NoTitleBar,
+		.NoCollapse,
+		.NoMove,
+		.NoBringToFrontOnFocus,
+		.NoNavFocus,
+		.NoBackground,
+	}
+
+	viewport := im.GetMainViewport()
+	im.SetNextWindowPos(viewport.WorkPos)
+	im.SetNextWindowSize(viewport.WorkSize)
+	im.SetNextWindowViewport(viewport.ID_)
+	im.PushStyleVarImVec2(im.StyleVar.WindowPadding, {0.0, 0.0})
+	im.PushStyleVar(im.StyleVar.WindowRounding, 0.0)
+	im.PushStyleVar(im.StyleVar.WindowBorderSize, 0.0)
+
+	im.Begin("DockSpace Demo", &dockspaceOpen, window_flags)
+
+	if opt_fullscreen {
+		im.PopStyleVar(3)
+	}
+
+	// DockSpace ID
+	dockspace_id := im.GetIDStr("MyDockSpace", nil)
+	im.DockSpace(dockspace_id, {0.0, 0.0}, im.DockNodeFlags{.PassthruCentralNode})
+	im.End()
 }
