@@ -4,7 +4,11 @@ import sdl "vendor:sdl2"
 
 initSDL :: proc() {
 	rendererFlags, windowFlags :=
-		sdl.RENDERER_ACCELERATED | sdl.RENDERER_PRESENTVSYNC, sdl.WINDOW_SHOWN | sdl.WINDOW_VULKAN
+		sdl.RENDERER_ACCELERATED |
+		sdl.RENDERER_PRESENTVSYNC |
+		sdl.RENDERER_TARGETTEXTURE,
+		sdl.WINDOW_SHOWN |
+		sdl.WINDOW_VULKAN
 	init_err := sdl.Init(sdl.INIT_VIDEO)
 	assert(init_err == 0, sdl.GetErrorString())
 

@@ -89,9 +89,12 @@ main :: proc() {
 			accumulator -= dt
 		}
 
-		prepareScene()
+		// Render to the viewport texture before starting ImGui rendering
+		render_to_viewport()
 
-		// cycle()
+		// Clear the main screen for ImGui (with a dark background)
+		sdl.SetRenderDrawColor(app.renderer, 40, 40, 40, 255)
+		sdl.RenderClear(app.renderer)
 
 		imsdlrndr.NewFrame()
 		imsdl.NewFrame()
@@ -99,7 +102,6 @@ main :: proc() {
 
 
 		render_dockspace()
-		render()
 		render_viewport_window()
 
 		im.ShowDemoWindow()
@@ -262,32 +264,18 @@ render_viewport_window :: proc() {
 
 	flags := im.WindowFlags{.NoCollapse, .NoResize}
 
-	im.SetNextWindowSize({f32(desired_w + 20), f32(desired_h + 20)}, im.Cond.Always) // +padding
+	im.SetNextWindowSize({f32(desired_w + 20), f32(desired_h + 20)}, im.Cond.Always)
 	im.Begin("SDL Viewport", nil, flags)
 
-	if desired_w != viewport_width || desired_h != viewport_height {
+	// Only recreate the texture if size has changed or it doesn't exist
+	if (desired_w != viewport_width || desired_h != viewport_height || app.viewport_texture == nil) {
 		viewport_width = desired_w
 		viewport_height = desired_h
 		update_viewport_texture()
 	}
 
-	sdl.SetRenderTarget(app.renderer, app.viewport_texture)
-	sdl.SetRenderDrawColor(app.renderer, 50, 50, 100, 255)
-	// sdl.RenderClear(app.renderer)
-
-	// SDL rectangles scene
-	rect: sdl.Rect = {0, 0, 100, 100}
-	sdl.SetRenderDrawColor(app.renderer, 200, 50, 50, 255)
-	sdl.RenderFillRect(app.renderer, &rect)
-
-	rect2: sdl.Rect = {200, 150, 80, 80}
-	sdl.SetRenderDrawColor(app.renderer, 50, 200, 50, 255)
-	sdl.RenderFillRect(app.renderer, &rect2)
-
-	sdl.SetRenderTarget(app.renderer, nil)
-
 	im.Image(
-		app.viewport_texture,
+		im.TextureID(app.viewport_texture),
 		{f32(desired_w), f32(desired_h)},
 		{0, 0},
 		{1, 1},
@@ -296,6 +284,21 @@ render_viewport_window :: proc() {
 	)
 
 	im.End()
+}
+
+render_to_viewport :: proc() {
+	if app.viewport_texture != nil {
+		previous_target := sdl.GetRenderTarget(app.renderer)
+		
+		sdl.SetRenderTarget(app.renderer, app.viewport_texture)
+		
+		sdl.SetRenderDrawColor(app.renderer, 50, 50, 100, 255)
+		sdl.RenderClear(app.renderer)
+		
+		render()
+		
+		sdl.SetRenderTarget(app.renderer, previous_target)
+	}
 }
 
 render_dockspace :: proc() {
@@ -327,7 +330,6 @@ render_dockspace :: proc() {
 		im.PopStyleVar(3)
 	}
 
-	// DockSpace ID
 	dockspace_id := im.GetIDStr("MyDockSpace", nil)
 	im.DockSpace(dockspace_id, {0.0, 0.0}, {.PassthruCentralNode, .NoDockingOverCentralNode})
 	im.End()

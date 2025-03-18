@@ -13,8 +13,6 @@ render :: proc() {
 			}
 		}
 	}
-	//  0x70 0x70 0x20 0x70 0xA8 0x20 0x50 0x50
-
 }
 
 drawText :: proc(x, y: i32, font: ^sdlF.Font, text: cstring, color: sdl.Color) {
