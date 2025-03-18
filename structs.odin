@@ -3,8 +3,8 @@ package main
 import sdl "vendor:sdl2"
 
 App :: struct {
-	renderer: ^sdl.Renderer,
-	window:   ^sdl.Window,
+	window:           ^sdl.Window,
+	renderer:         ^sdl.Renderer,
+	viewport_texture: ^sdl.Texture,
 }
 app: App
-

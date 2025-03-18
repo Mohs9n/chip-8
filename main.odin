@@ -99,6 +99,8 @@ main :: proc() {
 
 
 		render_dockspace()
+		render()
+		render_viewport_window()
 
 		im.ShowDemoWindow()
 
@@ -144,7 +146,7 @@ main :: proc() {
 
 		im.Render()
 
-		render()
+		// render()
 
 		buf: [4]byte
 		res := strconv.itoa(buf[:], int(fps_current))
@@ -254,6 +256,48 @@ input :: proc() -> bool {
 }
 
 
+render_viewport_window :: proc() {
+	desired_w: i32 = CH8_WIDTH * SCALE
+	desired_h: i32 = CH8_HEIGHT * SCALE
+
+	flags := im.WindowFlags{.NoCollapse, .NoResize}
+
+	im.SetNextWindowSize({f32(desired_w + 20), f32(desired_h + 20)}, im.Cond.Always) // +padding
+	im.Begin("SDL Viewport", nil, flags)
+
+	if desired_w != viewport_width || desired_h != viewport_height {
+		viewport_width = desired_w
+		viewport_height = desired_h
+		update_viewport_texture()
+	}
+
+	sdl.SetRenderTarget(app.renderer, app.viewport_texture)
+	sdl.SetRenderDrawColor(app.renderer, 50, 50, 100, 255)
+	// sdl.RenderClear(app.renderer)
+
+	// SDL rectangles scene
+	rect: sdl.Rect = {0, 0, 100, 100}
+	sdl.SetRenderDrawColor(app.renderer, 200, 50, 50, 255)
+	sdl.RenderFillRect(app.renderer, &rect)
+
+	rect2: sdl.Rect = {200, 150, 80, 80}
+	sdl.SetRenderDrawColor(app.renderer, 50, 200, 50, 255)
+	sdl.RenderFillRect(app.renderer, &rect2)
+
+	sdl.SetRenderTarget(app.renderer, nil)
+
+	im.Image(
+		app.viewport_texture,
+		{f32(desired_w), f32(desired_h)},
+		{0, 0},
+		{1, 1},
+		{1, 1, 1, 1},
+		{0, 0, 0, 0},
+	)
+
+	im.End()
+}
+
 render_dockspace :: proc() {
 	dockspaceOpen := true
 	opt_fullscreen_persistant :: true
@@ -285,6 +329,21 @@ render_dockspace :: proc() {
 
 	// DockSpace ID
 	dockspace_id := im.GetIDStr("MyDockSpace", nil)
-	im.DockSpace(dockspace_id, {0.0, 0.0}, im.DockNodeFlags{.PassthruCentralNode})
+	im.DockSpace(dockspace_id, {0.0, 0.0}, {.PassthruCentralNode, .NoDockingOverCentralNode})
 	im.End()
+}
+
+
+update_viewport_texture :: proc() {
+	if app.viewport_texture != nil {
+		sdl.DestroyTexture(app.viewport_texture)
+	}
+
+	app.viewport_texture = sdl.CreateTexture(
+		app.renderer,
+		sdl.PixelFormatEnum.RGBA8888,
+		sdl.TextureAccess.TARGET,
+		viewport_width,
+		viewport_height,
+	)
 }
