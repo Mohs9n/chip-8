@@ -292,7 +292,7 @@ render_to_viewport :: proc() {
 		
 		sdl.SetRenderTarget(app.renderer, app.viewport_texture)
 		
-		sdl.SetRenderDrawColor(app.renderer, 50, 50, 100, 255)
+		sdl.SetRenderDrawColor(app.renderer, 100, 150, 200, 255)
 		sdl.RenderClear(app.renderer)
 		
 		render()
