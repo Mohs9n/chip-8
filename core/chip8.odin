@@ -158,10 +158,13 @@ cycle :: proc(chip8: ^Chip8) {
 			chip8.reg[X] = chip8.reg[Y]
 		case 0x1:
 			chip8.reg[X] |= chip8.reg[Y]
+			chip8.reg[0xF] = 0
 		case 0x2:
 			chip8.reg[X] &= chip8.reg[Y]
+			chip8.reg[0xF] = 0
 		case 0x3:
 			chip8.reg[X] ~= chip8.reg[Y]
+			chip8.reg[0xF] = 0
 		case 0x4:
 			sum := u16(chip8.reg[X]) + u16(chip8.reg[Y])
 			chip8.reg[X] = u8(sum)
@@ -172,15 +175,15 @@ cycle :: proc(chip8: ^Chip8) {
 			chip8.reg[0xF] = 1 if chip8.reg[X] >= chip8.reg[Y] else 0
 			chip8.reg[X] = diff
 		case 0x6:
-			chip8.reg[0xF] = chip8.reg[X] & 1
-			chip8.reg[X] = chip8.reg[X] >> 1
+			chip8.reg[0xF] = chip8.reg[Y] & 1
+			chip8.reg[X] = chip8.reg[Y] >> 1
 		case 0x7:
 			diff := chip8.reg[Y] - chip8.reg[X]
 			chip8.reg[0xF] = 1 if chip8.reg[Y] >= chip8.reg[X] else 0
 			chip8.reg[X] = diff
 		case 0xE:
-			chip8.reg[0xF] = (chip8.reg[X] & 0x80) >> 7
-			chip8.reg[X] = chip8.reg[X] << 1
+			chip8.reg[0xF] = (chip8.reg[Y] & 0x80) >> 7
+			chip8.reg[X] = chip8.reg[Y] << 1
 		}
 	case 0x9:
 		if chip8.reg[X] != chip8.reg[Y] do chip8.PC += 2
@@ -242,7 +245,9 @@ cycle :: proc(chip8: ^Chip8) {
 		case 0x18:
 			chip8.STimer = chip8.reg[X]
 		case 0x1E:
-			chip8.I = chip8.I + u16(chip8.reg[X])
+			chip8.I += u16(chip8.reg[X])
+			if chip8.I > 0xFFF do chip8.reg[0xF] = 1
+			else do chip8.reg[0xF] = 0
 		case 0x29:
 			chip8.I = u16(0x050 + (chip8.reg[X] * 5))
 		case 0x33:
@@ -253,10 +258,12 @@ cycle :: proc(chip8: ^Chip8) {
 			for i in 0 ..= X {
 				chip8.ram[chip8.I + i] = chip8.reg[i]
 			}
+			chip8.I += X
 		case 0x65:
 			for i in 0 ..= X {
 				chip8.reg[i] = chip8.ram[chip8.I + i]
 			}
+			chip8.I += X
 		}
 	}
 }

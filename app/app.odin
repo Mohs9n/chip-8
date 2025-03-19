@@ -4,17 +4,17 @@ import "core:fmt"
 import "core:os"
 import "core:time"
 import sdl "vendor:sdl2"
-
+import "../audio"
 import "../core"
 import "../input"
 import "../renderer"
 import "../ui"
 
-
 App :: struct {
 	chip8:    ^core.Chip8,
 	renderer: ^renderer.Renderer,
 	ui:       ^ui.UI,
+	audio:    ^audio.Audio_Context,
 	running:  bool,
 }
 
@@ -24,6 +24,7 @@ create_app :: proc() -> ^App {
 	app.chip8 = core.create_chip8()
 	app.renderer = renderer.initialize_renderer()
 	app.ui = ui.initialize_ui(app.renderer.window, app.renderer.renderer)
+	app.audio = audio.initialize_audio()
 	app.running = true
 
 	load_default_rom(app)
@@ -34,6 +35,7 @@ create_app :: proc() -> ^App {
 destroy_app :: proc(app: ^App) {
 	ui.destroy_ui(app.ui)
 	renderer.destroy_renderer(app.renderer)
+	audio.destroy_audio(app.audio)
 	core.destroy_chip8(app.chip8)
 	free(app)
 }
@@ -84,6 +86,14 @@ run :: proc(app: ^App) {
 		for accumulator >= dt {
 			core.cycle(app.chip8)
 			core.update_timers(app.chip8)
+			
+			// Update audio based on sound timer
+			if app.chip8.STimer > 0 {
+				audio.play_audio(app.audio)
+			} else {
+				audio.stop_audio(app.audio)
+			}
+			
 			accumulator -= dt
 		}
 

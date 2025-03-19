@@ -134,11 +134,6 @@ present_renderer :: proc(renderer: ^Renderer) {
 
 
 draw_text :: proc(renderer: ^Renderer, x, y: i32, font: rawptr, text: cstring, color: sdl.Color) {
-	when ODIN_DEBUG {
-		fmt.println("Drawing text:", text)
-	}
-
-
 	surface := sdlF.RenderText_Solid(cast(^sdlF.Font)font, text, color)
 	if surface == nil {
 		fmt.eprintln("Failed to render text surface")
