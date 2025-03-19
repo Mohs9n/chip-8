@@ -54,7 +54,9 @@ load_default_rom :: proc(app: ^App) {
 
 run :: proc(app: ^App) {
 	dt: f64 = 1.0 / 500.0
+	timer_dt: f64 = 1.0 / 60.0
 	accumulator: f64 = 0.0
+	timer_accumulator: f64 = 0.0
 	last_counter := sdl.GetPerformanceCounter()
 	perf_freq := f64(sdl.GetPerformanceFrequency())
 
@@ -81,10 +83,15 @@ run :: proc(app: ^App) {
 		last_counter = current_counter
 
 		accumulator += delta_time
+		timer_accumulator += delta_time
 
 		
 		for accumulator >= dt {
 			core.cycle(app.chip8)
+			accumulator -= dt
+		}
+
+		if timer_accumulator >= timer_dt {
 			core.update_timers(app.chip8)
 			
 			// Update audio based on sound timer
@@ -94,7 +101,7 @@ run :: proc(app: ^App) {
 				audio.stop_audio(app.audio)
 			}
 			
-			accumulator -= dt
+			timer_accumulator -= timer_dt
 		}
 
 		
