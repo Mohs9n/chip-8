@@ -69,12 +69,6 @@ run :: proc(app: ^App) {
                 app.running = false
                 break
             }
-
-			
-			if e.type == .QUIT {
-				app.running = false
-				break
-			}
 		}
 
 		

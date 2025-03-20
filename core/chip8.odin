@@ -17,7 +17,7 @@ Chip8 :: struct {
 	PC:             u16,
 	DTimer, STimer: u8,
 	stack:          [STACK_SIZE]u16,
-	sp:             u8, // Stack pointer
+	sp:             u8,
 	paused:         bool,
 }
 
