@@ -54,7 +54,7 @@ load_default_rom :: proc(app: ^App) {
 
 run :: proc(app: ^App) {
 	dt: f64 = 1.0 / 500.0
-	timer_dt: f64 = 1.0 / 60.0
+	timer_dt: f64 = 1.0 / 680.0
 	accumulator: f64 = 0.0
 	timer_accumulator: f64 = 0.0
 	last_counter := sdl.GetPerformanceCounter()

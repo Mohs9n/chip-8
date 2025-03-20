@@ -1,13 +1,12 @@
 package core
 
-import "core:container/queue"
 import "core:fmt"
 import "core:math/rand"
 import "core:os"
 
 CH8_WIDTH :: 64
 CH8_HEIGHT :: 32
-
+STACK_SIZE :: 16
 
 Chip8 :: struct {
 	ram:            [4096]u8,
@@ -17,7 +16,8 @@ Chip8 :: struct {
 	I:              u16,
 	PC:             u16,
 	DTimer, STimer: u8,
-	stack:          queue.Queue(u16),
+	stack:          [STACK_SIZE]u16,
+	sp:             u8, // Stack pointer
 	paused:         bool,
 }
 
@@ -31,7 +31,6 @@ create_chip8 :: proc() -> ^Chip8 {
 
 
 destroy_chip8 :: proc(chip8: ^Chip8) {
-    queue.destroy(&chip8.stack)
 	free(chip8)
 }
 
@@ -40,7 +39,6 @@ reset_state :: proc(chip8: ^Chip8) {
 	chip8^ = {} 
 	chip8.PC = 0x200
 	chip8.paused = false
-	queue.init(&chip8.stack)
 }
 
 
@@ -118,6 +116,29 @@ is_paused :: proc(chip8: ^Chip8) -> bool {
 }
 
 
+// Push a value onto the stack
+push_stack :: proc(chip8: ^Chip8, value: u16) {
+	if chip8.sp < STACK_SIZE {
+		chip8.stack[chip8.sp] = value
+		chip8.sp += 1
+	} else {
+		fmt.eprintln("Stack overflow!")
+	}
+}
+
+
+// Pop a value from the stack
+pop_stack :: proc(chip8: ^Chip8) -> u16 {
+	if chip8.sp > 0 {
+		chip8.sp -= 1
+		return chip8.stack[chip8.sp]
+	} else {
+		fmt.eprintln("Stack underflow!")
+		return 0
+	}
+}
+
+
 cycle :: proc(chip8: ^Chip8) {
 	if chip8.paused do return
 
@@ -135,12 +156,12 @@ cycle :: proc(chip8: ^Chip8) {
 		case 0xE0:
 			clear_display(chip8)
 		case 0xEE:
-			chip8.PC = queue.pop_back(&chip8.stack)
+			chip8.PC = pop_stack(chip8)
 		}
 	case 0x1:
 		chip8.PC = NNN
 	case 0x2:
-		queue.append_elem(&chip8.stack, chip8.PC)
+		push_stack(chip8, chip8.PC)
 		chip8.PC = NNN
 	case 0x3:
 		if u16(chip8.reg[X]) == NN do chip8.PC += 2
